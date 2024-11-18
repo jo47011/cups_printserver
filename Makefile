@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.3 2011/06/26 14:55:24 gruhn Exp $
+# $Id: Makefile,v 1.3 2011/06/26 14:55:24 jo47011 Exp $
 
 # This file is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -6,7 +6,7 @@
 
 subdirs = form agb pdfagb2 cups run
 
-install_prefix=/cygdrive/c/MyProg/MIKI
+install_prefix=/cygdrive/c/MyProg/
 
 .PHONY: all clean
 

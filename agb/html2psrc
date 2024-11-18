@@ -1,4 +1,4 @@
-/* $Id: html2psrc,v 1.5 2011/06/26 14:55:25 gruhn Exp $ */
+/* $Id: html2psrc,v 1.5 2011/06/26 14:55:25 jo47011 Exp $ */
 
 BODY, P {
 	font-size: 7pt;

@@ -1,7 +1,5 @@
 #! /bin/bash
 
-# $Id: mikipdftops,v 1.28 2011/06/27 17:05:21 ferber Exp $
-
 # This file is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

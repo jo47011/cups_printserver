@@ -15,10 +15,10 @@ selfdir=$( (cd "${self%/?*}" && pwd) )
 [ "$selfdir" ] || exit 1
 
 # Change this if your run-time directory is elsewhere
-MIKI_HOME="/usr/local/miki"
+HOME="/usr/local/cups_printserver"
 
 # This is the script we want to execute
-script="${MIKI_HOME}/cups/$(basename "${self}")"
+script="${HOME}/cups/$(basename "${self}")"
 
 if [ ! -f "${script}" ] ; then
   echo 1>&2 "ERROR: ${script} not found"

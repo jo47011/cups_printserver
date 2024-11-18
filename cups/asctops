@@ -1,7 +1,5 @@
 #! /bin/bash
 
-# $Id: mikiasctops,v 1.9 2011/07/24 17:13:15 ferber Exp $
-
 # This file is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -34,13 +32,13 @@ tmp="${TMPDIR:-${selfdir}}/$$"
 ecd=0
 
 # generate a single copy of the end-user PDF
-"${selfdir}/mikiasctopdf" \
+"${selfdir}/asctopdf" \
   "${job}" "${user}" "${title}" 1 "${options}" "${filename}" \
   > "${tmp}.pdf" || ecd=$?
 
 # convert the PDF to PostScript
 if [ ${ecd} -eq 0 ] ; then
-  "${selfdir}/mikipdftops" \
+  "${selfdir}/pdftops" \
     "${job}" "${user}" "${title}" 1 "${options}" "${tmp}.pdf" \
     > "${tmp}.ps" || ecd=$?
 fi

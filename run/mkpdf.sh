@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# $Id: mkpdf.sh,v 1.1 2011/06/26 14:57:06 gruhn Exp $
+# $Id: mkpdf.sh,v 1.1 2011/06/26 14:57:06 jo47011 Exp $
 
 case "$0" in
   /*) self=$0 ;;

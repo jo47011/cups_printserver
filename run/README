@@ -1,3 +1,3 @@
-$Id: README,v 1.1 2011/06/26 14:57:06 gruhn Exp $
+$Id: README,v 1.1 2011/06/26 14:57:06 jo47011 Exp $
 
-This directory contains BAT files which are invoked from within the Harbour MIKI stuff to create the PS and PDF files.
+This directory contains BAT files which are invoked from within the Harbour  stuff to create the PS and PDF files.
