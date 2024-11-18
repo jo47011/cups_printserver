@@ -1,0 +1,35 @@
+$Id: README,v 1.5 2011/09/20 08:01:45 gruhn Exp $
+
+To install later updates on an existing VMWare Image <ip>:
+
+  cvs co miki
+  rsync -av miki/ miki@192.168.2.30:/usr/local/miki/
+  ssh miki@<ip>
+  cd /usr/local/miki && make clean && make
+  chmod 777 cups
+
+-------------------------------------------------
+
+To change the IP address of the image:
+
+Wenn Ihr eine feste IP vergeben wollt, dann mußt Du das (als root) in /etc/network/interfaces eintragen.  Aus:
+
+    auto eth0
+    iface eth0 inet dhcp
+
+
+wird dann
+
+    auto eth0
+    iface eth0 inet static
+    address <IP>
+    gateway <GW>
+    netmask <NETMASK>
+
+
+  
+--------------------------------------------------
+
+Kommando-Zeile mit curl:
+
+curl -s --data-binary "@ASC-FILE" "http://192.168.2.30/axt/?agb=1&kopie=1&… " > PS-FILE

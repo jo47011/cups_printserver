@@ -1,0 +1,41 @@
+/* $Id: html2psrc,v 1.5 2011/06/26 14:55:25 gruhn Exp $ */
+
+BODY, P {
+	font-size: 7pt;
+	font-family: Helvetica;
+	text-align: justify;
+	color: #555555;
+}
+
+H1 {
+        font-size: 12pt;
+        margin-top: 1em;
+	text-align: left;
+	color: #555555;
+}
+
+@html2ps {
+	forms: 1;
+	prefilled: 1;
+	paper { type: a4; }
+	option {
+		DSC: 1;
+		twoup: 1;
+		colour: 1;
+		underline: 1;
+		original: 1;
+		hyphenate: 0;
+		language: en;
+		number: 0;
+	}
+	break-table: 1;
+	seq-number: 0;
+	margin { middle: 1cm; }
+}
+
+@page {
+	margin-left: 2cm;
+	margin-right: 2cm;
+	margin-top: 3cm;
+	margin-bottom: 3cm;
+}

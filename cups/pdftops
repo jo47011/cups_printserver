@@ -1,0 +1,83 @@
+#! /bin/bash
+
+# $Id: mikipdftops,v 1.28 2011/06/27 17:05:21 ferber Exp $
+
+# This file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+case "$0" in
+  /*) self=$0 ;;
+   *) self=$(pwd)/$0 ;;
+esac
+
+selfdir=$( (cd "${self%/?*}" && pwd) )
+[ "$selfdir" ] || exit 1
+
+if [ $# -lt 5 ] ; then
+  echo 1>&2 "ERROR: ${self} job user title copies options [filename]"
+  exit 1
+fi
+
+# CUPS job parameters
+job="$1"
+user="$2"
+title="$3"
+copies="$4"
+options="$5"
+filename="$6" # optional
+
+# we only support one copy
+test ${copies:-1} -eq 1 \
+  || echo 1>&2 "WARNING: # of copies (${copies}) ignored"
+
+for opt in ${options} ; do
+  case "${opt}" in
+    agb=*) eval "${opt}" ;;
+  esac
+done
+
+# temporary print file name
+tmp="${TMPDIR:-${selfdir}}/$$"
+
+# exit code (optimistic assumption)
+ecd=0
+
+cat "${filename:-}" > "${tmp}.pdf" || ecd=$?
+if [ ${ecd} -eq 0 ] ; then
+  /usr/bin/pdftops -q -paper A4 -duplex "${tmp}.pdf" "${tmp}.ps" \
+    2>/dev/null || ecd=$?
+fi
+rm -f "${tmp}.pdf"
+
+pages=""
+if [ ${ecd} -eq 0 -a ${agb:-0} -ne 0 ] ; then
+  numpages=$(gawk < "${tmp}.ps" 'BEGIN { numpages=1; }
+    /^%%Pages: *[[:digit:]]+$/ { numpages=$2; }
+    END { printf("%d", int(numpages)); }') 2>/dev/null
+  echo 1>&2 "DEBUG: input [${numpages}] page(s)"
+  if [ ${numpages:-0} -gt 1 ] ; then
+    # re-order for duplex printing with AGBs on page 2
+    pages="1,${numpages}"
+    test ${numpages} -lt 3 || pages="${pages},2"
+    test ${numpages} -lt 4 || pages="${pages}-$(( ${numpages}-1 ))"
+    echo 1>&2 "DEBUG: reordering to [${pages}]"
+    psselect -q -p"${pages}" "${tmp}.ps" 2>/dev/null \
+      | tr '\r' '\n' | gawk 'BEGIN { p=0; } /^pdfStartPage/ { ++p;
+        if(p>=3) print "<</Duplex false>> setpagedevice";
+      } { print; }' # non-duplex starting with page 3
+  fi
+fi
+
+if [ ${ecd} -eq 0 -a -z "${pages}" ] ; then
+  echo 1>&2 "DEBUG: non-duplex output (as-is)"
+  gawk < "${tmp}.ps" '/Duplex true def/ {
+    gsub("Duplex true","Duplex false"); } { print; }'
+fi
+
+rm -f "${tmp}.ps"
+
+test ${ecd} -eq 0 \
+  || echo 1>&2 "ERROR: ${self} failed with error ${ecd}"
+exit ${ecd}
+

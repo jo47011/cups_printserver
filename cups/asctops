@@ -1,0 +1,64 @@
+#! /bin/bash
+
+# $Id: mikiasctops,v 1.9 2011/07/24 17:13:15 ferber Exp $
+
+# This file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+case "$0" in
+  /*) self=$0 ;;
+   *) self=$(pwd)/$0 ;;
+esac
+
+selfdir=$( (cd "${self%/?*}" && pwd) )
+[ "$selfdir" ] || exit 1
+
+if [ $# -lt 5 ] ; then
+  echo 1>&2 "ERROR: ${self} job user title copies options [filename]"
+  exit 1
+fi
+
+# CUPS job parameters
+job="$1"
+user="$2"
+title="$3"
+copies="${4:-1}"
+options="$5"
+filename="$6" # optional
+
+# temporary print file name
+tmp="${TMPDIR:-${selfdir}}/$$"
+
+# exit code (optimistic assumption)
+ecd=0
+
+# generate a single copy of the end-user PDF
+"${selfdir}/mikiasctopdf" \
+  "${job}" "${user}" "${title}" 1 "${options}" "${filename}" \
+  > "${tmp}.pdf" || ecd=$?
+
+# convert the PDF to PostScript
+if [ ${ecd} -eq 0 ] ; then
+  "${selfdir}/mikipdftops" \
+    "${job}" "${user}" "${title}" 1 "${options}" "${tmp}.pdf" \
+    > "${tmp}.ps" || ecd=$?
+fi
+
+rm -f "${tmp}.pdf"
+
+# generate output only if there was no error
+if [ ${ecd} -eq 0 ] ; then
+  while [ ${copies} -gt 0 ] ; do
+    echo 1>&2 "DEBUG: # of copies to print: ${copies}"
+    cat "${tmp}.ps"
+    copies=$(( ${copies} - 1 ))
+  done
+fi
+
+rm -f "${tmp}.ps"
+
+test ${ecd} -eq 0 \
+  || echo 1>&2 "ERROR: ${self} failed with error ${ecd}"
+
+exit ${ecd}

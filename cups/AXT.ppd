@@ -1,0 +1,15 @@
+*PPD-Adobe: "4.3"
+*% "$Id: AXT.ppd,v 1.2 2011/07/23 17:05:19 ferber Exp $"
+*% Driver PPD file for the Common UNIX Printing System (CUPS).
+*FormatVersion:	"4.3"
+*FileVersion:	"1.1"
+*PCFileName:	"AXT.ppd"
+*Manufacturer:	"iCADA"
+*ModelName:     "Form Printer"
+*ShortNickName: "Form Printer"
+*NickName:      "Form Printer"
+*cupsFilter:    "text/plain 0 asctops"
+*ColorDevice:	True
+*DefaultColorSpace: RGB
+*FileSystem:	True
+

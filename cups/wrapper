@@ -1,0 +1,28 @@
+#! /bin/bash
+
+# $Id: wrapper,v 1.1 2009/12/22 17:08:20 ferber Exp $
+
+# This file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+case "$0" in
+  /*) self=$0 ;;
+   *) self=$(pwd)/$0 ;;
+esac
+
+selfdir=$( (cd "${self%/?*}" && pwd) )
+[ "$selfdir" ] || exit 1
+
+# Change this if your run-time directory is elsewhere
+MIKI_HOME="/usr/local/miki"
+
+# This is the script we want to execute
+script="${MIKI_HOME}/cups/$(basename "${self}")"
+
+if [ ! -f "${script}" ] ; then
+  echo 1>&2 "ERROR: ${script} not found"
+  exit 1
+fi
+
+exec "${script}" "$@"

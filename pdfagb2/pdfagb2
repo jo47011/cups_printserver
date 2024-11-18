@@ -1,0 +1,26 @@
+#! /bin/bash
+
+# $Id: pdfagb2,v 1.1 2009/11/15 20:26:22 ferber Exp $
+
+# This file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+case "$0" in
+  /*) self=$0 ;;
+   *) self=$(pwd)/$0 ;;
+esac
+
+selfdir=$( (cd "${self%/?*}" && pwd) )
+[ "$selfdir" ] || exit 1
+
+# http://www.lowagie.com/iText/download.html
+CLASSPATH="${selfdir}/iText-2.1.5.jar:${CLASSPATH}"
+CLASSPATH="${selfdir}:${CLASSPATH}"
+export CLASSPATH
+
+#if [ ! -f "${selfdir}/pdfagb2.class" ] ; then
+#  ( cd "${selfdir}" && javac pdfagb2.java ) || exit 1
+#fi
+
+exec java pdfagb2 "$@"

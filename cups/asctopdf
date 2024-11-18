@@ -1,0 +1,167 @@
+#! /bin/bash
+
+# $Id: mikiasctopdf,v 1.44 2011/11/07 12:19:10 ferber Exp $
+
+# This file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+case "$0" in
+  /*) self=$0 ;;
+   *) self=$(pwd)/$0 ;;
+esac
+
+selfdir=$( (cd "${self%/?*}" && pwd) )
+[ "$selfdir" ] || exit 1
+
+if [ $# -lt 5 ] ; then
+  echo 1>&2 "ERROR: ${self} job user title copies options [filename]"
+  exit 1
+fi
+
+# page margins (mm)
+left=1; right=2; top=1; bottom=2
+
+# CUPS job parameters
+job="$1"
+user="$2"
+title="$3"
+copies="$4"
+options="$5"
+filename="$6" # text file name (optional)
+
+# we only support one copy
+test ${copies:-1} -eq 1 \
+  || echo 1>&2 "WARNING: # of copies (${copies}) ignored"
+
+# options defaults
+kopie=0
+agb=0
+landscape=0
+epsmark="form"
+pdfmark=""
+#font='Courier5/11.1'
+font='Courier12/11.1'
+
+# eval options
+for opt in ${options} ; do
+  case "${opt}" in
+    kopie=*|agb=*|landscape=*) eval "${opt}" ;;
+    form=*) epsmark="${opt#*=}" ;;
+    watermark=*) pdfmark="${opt#*=}" ;;
+    font=*) font="${opt#*=}" ;;
+  esac
+done
+
+# make sure EPS background form exists
+if [ ! -z "${epsmark}" ] ; then
+  epsmark="${selfdir}/../form/${epsmark}.eps"
+  if [ ! -f "${epsmark}" ] ; then
+    echo 1>&2 "ERROR: EPS form not found"
+    exit 1
+  fi
+fi
+
+# make sure PDF watermark exists
+if [ ! -z "${pdfmark}" ] ; then
+  pdfmark="${selfdir}/../form/${pdfmark}.pdf"
+  if [ ! -f "${pdfmark}" ] ; then
+    echo 1>&2 "ERROR: PDF watermark not found"
+    exit 1
+  fi
+fi
+
+(
+  args="-q -e@"
+#  args="${args} --title=${title}"
+  args="${args} --font=${font}"
+  args="${args} --no-header"
+  args="${args} --no-job-header"
+  args="${args} --no-page-prefeed"
+  args="${args} --encoding=dos"
+  args="${args} --escapes=@"
+  args="${args} --media=A4"
+  args="${args} -DDuplex:false"
+
+  if [ "${landscape:-0}" == "1" ] ; then
+    args="${args} --landscape"
+    args="${args} --margins=40:-10:27:" # left:right:top:bottom
+  else
+    args="${args} --portrait"
+    case "${epsmark##*/}" in
+      form.*|brief.*)
+        args="${args} --margins=40:-5:20:-4" ;;
+      liste.*|*)
+        args="${args} --margins=25:-5:10:-4" ;;
+    esac
+  fi
+
+  if [ "${kopie:-0}" = "1" ] ; then
+    args="${args} --underlay=Kopie"
+    args="${args} --ul-angle=45"
+    args="${args} --ul-gray=.8"
+    args="${args} --ul-style=outline"
+    if [ "${landscape:-0}" = "1" ] ; then
+      args="${args} --ul-font=Times-Roman250"
+      args="${args} --ul-position=+160+135"
+    else
+      args="${args} --ul-font=Times-Roman200"
+      args="${args} --ul-position=+70+135"
+    fi
+  fi
+
+  if [ ! -z "${epsmark}" ] ; then
+#    form="@epsf[n x-6.2a y-2.8a]{${epsmark}}"
+    case "${epsmark##*/}" in
+      form.*|brief.*)
+	form="@epsf[n x-6.3a y-2.6a]{${epsmark}}" ;;
+      liste.*|*)
+#	form="@epsf[cn]{${epsmark}}" ;;
+	form="@epsf[n x-1c y-.8c]{${epsmark}}" ;;
+    esac
+  else
+    form=""
+  fi
+
+  cat "${filename:--}" \
+  | gawk '{ gsub(/@epsf[^}]*}/,""); }
+    NR==1 { gsub(/^/,"'"${form}"'"); }
+    { gsub(//,"'"${form}"'"); }
+    { gsub(//,""); }
+#   { sub(/[ \t]+$/,""); }
+#   { gsub(/@font{[^}]*}/,""); }
+    { print; }' \
+  | gawk 'NR > 1 { print s; } { s=$0; } # remove ^L after last page
+    END { sub(/(@epsf[^}]*})?$/,"",s); print s; }' \
+  | enscript ${args} -o - || exit 2
+
+  # append AGBs
+  if [ "${agb:-1}" = "1" ] ; then
+    echo " false 0 startjob pop "
+    echo " newpath fill "
+    cat "${selfdir}/../agb/agb.ps"
+  fi
+
+) | psresize -q -PA4 \
+	-w$((210-${left}-${right}))mm \
+	-h$((297-${top}-${bottom}))mm \
+  | pstops -q "1:0@.99(${left}mm,${bottom}mm)" \
+  | ps2pdf -sPAPERSIZE=a4 \
+    -dCompatibilityLevel=1.3 \
+    -dSubsetFonts=false -dEmbedAllFonts=true \
+    -dAutoFilterColorImages=false \
+    -dAutoFilterGrayImages=false \
+    -dAutoFilterMonoImages=false \
+    -dColorImageFilter=/FlateEncode \
+    -dGrayImageFilter=/FlateEncode \
+    -dMonoImageFilter=/FlateEncode \
+    -dOptimize=true \
+    -dCompressPages=true \
+    -dLZWEncodePages=true \
+    -dAutoRotatePages=/PageByPage \
+    - - \
+  | if [ ! -z "${pdfmark:-}" ] ; then
+      "${selfdir}/../pdfagb2/pdfmark" "${pdfmark}"
+    else cat - ; fi || exit 3
+
+exit 0

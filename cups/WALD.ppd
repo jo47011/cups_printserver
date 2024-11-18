@@ -1,0 +1,15 @@
+*PPD-Adobe: "4.3"
+*% "$Id: WALD.ppd,v 1.2 2011/07/23 17:05:19 ferber Exp $"
+*% Driver PPD file for the Common UNIX Printing System (CUPS).
+*FormatVersion:	"4.3"
+*FileVersion:	"1.1"
+*PCFileName:	"WALD.ppd"
+*Manufacturer:	"iCADA"
+*ModelName:     "PDF Writer"
+*ShortNickName: "PDF Writer"
+*NickName:      "PDF Writer"
+*cupsFilter:    "text/plain 0 asctopdf"
+*ColorDevice:	True
+*DefaultColorSpace: RGB
+*FileSystem:	True
+

@@ -1,0 +1,55 @@
+#! /bin/bash
+
+# $Id: pass-through,v 1.9 2011/08/08 16:46:12 zschach Exp $
+
+# This file is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+case "$0" in
+  /*) self=$0 ;;
+   *) self=$(pwd)/$0 ;;
+esac
+
+selfdir=$( (cd "${self%/?*}" && pwd) )
+[ "$selfdir" ] || exit 1
+
+if [ $# -lt 5 ] ; then
+  echo 1>&2 "ERROR: ${self} job user title copies options [filename]"
+  exit 1
+fi
+
+# CUPS job parameters
+job="$1"
+user="$2"
+title="$3"
+copies="$4"
+options="$5"
+filename="$6" # optional
+
+for opt in ${options} ; do
+  case "${opt}" in
+    s=*|server=*|p=*|printer=*) eval "${opt}" ;;
+  esac
+done
+
+if [ -z "${server:-${s}}" -o -z "${printer:-${p}}" ] ; then
+  echo 1>&2 "ERROR: ${self} requires both server/s and printer/p  option"
+  exit 1
+fi
+
+# exit code (optimistic assumption)
+ecd=0
+
+cat "${filename:--}" | lpr \
+  -H "${server:-${s:-192.168.2.216}}" \
+  -P "${printer:-${p:-C2380PS}}" \
+  -\# ${copies:-1} \
+  -U "${user}" \
+  -T "${title}" \
+  -o raw || ecd=$?
+
+test ${ecd} -eq 0 \
+  || echo 1>&2 "ERROR: ${self} failed with error ${ecd}"
+
+exit ${ecd}
